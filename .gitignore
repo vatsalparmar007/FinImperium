@@ -40,3 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env
+
+# The example file has no secrets and documents the variables, so commit it
+!.env.example

@@ -1,0 +1,39 @@
+# Runs FinImperium behind Nginx on one server.
+# The database is MongoDB Atlas (managed), so it is not a container here.
+#
+#   cp .env.example .env      # then fill in the real values
+#   docker compose up -d --build
+#   curl http://localhost/api/health
+services:
+  app:
+    image: ${APP_IMAGE:-finimperium:local}
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:?set it in .env}
+        GIT_SHA: ${GIT_SHA:-dev}
+        BUILD_TIME: ${BUILD_TIME:-unknown}
+    env_file: .env
+    restart: unless-stopped
+    expose:
+      - "3000"            # reachable only from Nginx, not from the internet
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 768m
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      app:
+        condition: service_healthy   # don't send traffic until the app passes /api/health
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }

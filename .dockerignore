@@ -1,0 +1,18 @@
+# Keep the build context small and never copy secrets into an image.
+.git
+.gitignore
+node_modules
+.next
+out
+coverage
+npm-debug.log*
+.env
+.env.*
+!.env.example
+*.pem
+Dockerfile
+docker-compose*.yml
+nginx
+*.md
+.vscode
+.DS_Store
